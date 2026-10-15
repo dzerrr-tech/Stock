@@ -66,8 +66,9 @@ Mark each item as implemented only after it works and has been tested.
 | Database driver | pgx | Direct SQL and transaction learning |
 | Authentication | [TODO: exact implementation] | Identity and protected API access |
 | Testing | Go testing / httptest and frontend tooling | Validate business rules and UI integration |
-| Dev environment | Docker Compose, if implemented | Reproducible local services |
+| Database hosting | Neon (managed PostgreSQL)|
 | CI/CD | GitHub Actions, if implemented | Repeatable automated checks |
+| Migrations | golang-migrate|
 
 Remove technologies that are not actually used.
 
