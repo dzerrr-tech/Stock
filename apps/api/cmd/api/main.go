@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"Stock/apps/api/internal/handler"
+	"Stock/apps/api/internal/repository"
+	"Stock/apps/api/internal/service"
 )
 
 func main() {
@@ -31,4 +33,9 @@ func main() {
 	if err := r.Run(":" + cfg.Port); err != nil {
 		log.Fatal(err)
 	}
+
+	productRepo := repository.NewProductRepository(pool)
+	productService := service.NewProductService(productRepo)
+	productHandler := handler.NewProductHandler(productService)
+	r.POST("/api/v1/products", productHandler.Create)
 }
