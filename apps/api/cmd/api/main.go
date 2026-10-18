@@ -30,12 +30,15 @@ func main() {
 	r.GET("/api/v1/health", health.HealthCheck)
 	r.GET("/api/v1/health/db", health.DatabaseCheck)
 
+	productRepo := repository.NewProductRepository(pool)
+	productService := service.NewProductService(productRepo)
+	productHandler := handler.NewProductHandler(productService)
+
+	r.POST("/api/v1/products", productHandler.Create)
+	r.GET("/api/v1/products", productHandler.List)
+
 	if err := r.Run(":" + cfg.Port); err != nil {
 		log.Fatal(err)
 	}
 
-	productRepo := repository.NewProductRepository(pool)
-	productService := service.NewProductService(productRepo)
-	productHandler := handler.NewProductHandler(productService)
-	r.POST("/api/v1/products", productHandler.Create)
 }

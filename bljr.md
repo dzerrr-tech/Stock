@@ -8,3 +8,12 @@
 - Invarian bisnis (stok >= 0, SKU unik) dijaga CHECK/UNIQUE di database; constraint diberi nama.
 - Migrasi lewat koneksi direct, bukan pooler PgBouncer.
 - Liveness (`/health`) dipisah dari readiness (`/health/db`) agar health check platform tidak membangunkan DB.
+
+# Service, repository, dan tes
+
+- Handler -> service -> repository: handler urus HTTP, service urus aturan bisnis, repository urus SQL.
+- `errors.As`: target harus sama dengan tipe konkret error. `ValidationError` (nilai) -> `var ve ValidationError`; `*pgconn.PgError` (pointer) -> `var pgErr *pgconn.PgError`.
+- Sentinel error (`ErrDuplicateSKU`) menerjemahkan error DB antar layer.
+- Table-driven test + `t.Run`; `t.Fatalf` (stop) vs `t.Errorf` (lanjut).
+- Tes integrasi: `t.Skip` bila env kosong, `t.Cleanup` (LIFO) untuk membersihkan data.
+- Mutation check: ubah kode sebentar untuk memastikan tes benar-benar bisa gagal.

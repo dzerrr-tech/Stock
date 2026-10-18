@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -64,7 +65,7 @@ func (h *ProductHandler) Create(c *gin.Context) {
 		MinStock: req.MinStock,
 	})
 	if err != nil {
-		var ve service.ValidationError
+		var ve *service.ValidationError
 		switch {
 		case errors.As(err, &ve):
 			writeError(c, http.StatusUnprocessableEntity, "validation_error", ve.Message, ve.Field)
@@ -78,4 +79,63 @@ func (h *ProductHandler) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, toProductResponse(p))
+}
+
+type paginationMeta struct {
+	Page     int `json:"page"`
+	PageSize int `json:"page_size"`
+	Total    int `json:"total"`
+}
+
+type listProductsResponse struct {
+	Data []productResponse `json:"data"`
+	Meta paginationMeta    `json:"meta"`
+}
+
+// queryInt membaca query param bertipe integer. Param yang tidak ada dihitung 0.
+func queryInt(c *gin.Context, name string) (int, error) {
+	raw := c.Query(name)
+	if raw == "" {
+		return 0, nil
+	}
+	return strconv.Atoi(raw)
+}
+
+func (h *ProductHandler) List(c *gin.Context) {
+	page, err := queryInt(c, "page")
+	if err != nil {
+		writeError(c, http.StatusBadRequest, "invalid_query", "page must be an integer", "page")
+		return
+	}
+	pageSize, err := queryInt(c, "page_size")
+	if err != nil {
+		writeError(c, http.StatusBadRequest, "invalid_query", "page_size must be an integer", "page_size")
+		return
+	}
+
+	result, err := h.service.List(c.Request.Context(), service.ListProductsInput{
+		Search:   c.Query("search"),
+		Page:     page,
+		PageSize: pageSize,
+	})
+	if err != nil {
+		var ve *service.ValidationError
+		if errors.As(err, &ve) {
+			writeError(c, http.StatusUnprocessableEntity, "validation_error", ve.Message, ve.Field)
+			return
+		}
+		log.Printf("list products: %v", err)
+		writeError(c, http.StatusInternalServerError, "internal_error", "something went wrong", "")
+		return
+	}
+
+	data := make([]productResponse, 0, len(result.Products))
+	for _, p := range result.Products {
+		data = append(data, toProductResponse(p))
+	}
+
+	c.JSON(http.StatusOK, listProductsResponse{
+		Data: data,
+		Meta: paginationMeta{Page: result.Page, PageSize: result.PageSize, Total: result.Total},
+	})
 }

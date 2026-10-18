@@ -67,3 +67,57 @@ func (s *ProductService) Create(ctx context.Context, in CreateProductInput) (mod
 	}
 	return p, nil
 }
+
+const (
+	defaultPageSize = 20
+	maxPageSize     = 100
+	maxPage         = 1_000_000
+	maxSearchLength = 100
+)
+
+type ListProductsInput struct {
+	Search   string
+	Page     int
+	PageSize int
+}
+
+type ListProductsResult struct {
+	Products []model.Product
+	Total    int
+	Page     int
+	PageSize int
+}
+
+func (s *ProductService) List(ctx context.Context, in ListProductsInput) (ListProductsResult, error) {
+	search := strings.TrimSpace(in.Search)
+	if utf8.RuneCountInString(search) > maxSearchLength {
+		return ListProductsResult{}, &ValidationError{Field: "search", Message: "must be at most 100 characters"}
+	}
+
+	page := in.Page
+	if page == 0 {
+		page = 1
+	}
+	if page < 1 || page > maxPage {
+		return ListProductsResult{}, &ValidationError{Field: "page", Message: "must be between 1 and 1000000"}
+	}
+
+	pageSize := in.PageSize
+	if pageSize == 0 {
+		pageSize = defaultPageSize
+	}
+	if pageSize < 1 || pageSize > maxPageSize {
+		return ListProductsResult{}, &ValidationError{Field: "page_size", Message: "must be between 1 and 100"}
+	}
+
+	products, total, err := s.products.List(ctx, repository.ListProductsParams{
+		Search: search,
+		Limit:  pageSize,
+		Offset: (page - 1) * pageSize,
+	})
+	if err != nil {
+		return ListProductsResult{}, err
+	}
+
+	return ListProductsResult{Products: products, Total: total, Page: page, PageSize: pageSize}, nil
+}

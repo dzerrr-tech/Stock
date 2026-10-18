@@ -39,3 +39,33 @@ func TestProductService_Create_Validation(t *testing.T) {
 		})
 	}
 }
+
+func TestProductService_List_Validation(t *testing.T) {
+	s := NewProductService(nil)
+
+	tests := []struct {
+		name      string
+		in        ListProductsInput
+		wantField string
+	}{
+		{"search too long", ListProductsInput{Search: strings.Repeat("a", 101)}, "search"},
+		{"negative page", ListProductsInput{Page: -1}, "page"},
+		{"page too large", ListProductsInput{Page: 1_000_001}, "page"},
+		{"negative page size", ListProductsInput{PageSize: -5}, "page_size"},
+		{"page size too large", ListProductsInput{PageSize: 101}, "page_size"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := s.List(context.Background(), tc.in)
+
+			var ve *ValidationError
+			if !errors.As(err, &ve) {
+				t.Fatalf("want *ValidationError, got %v", err)
+			}
+			if ve.Field != tc.wantField {
+				t.Errorf("field = %q, want %q", ve.Field, tc.wantField)
+			}
+		})
+	}
+}

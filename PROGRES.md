@@ -3,6 +3,7 @@
 ## Selesai
 - [x] Langkah 1: kerangka backend Go + Gin, `GET /api/v1/health` (diuji manual dengan curl, 200 OK)
 - [x] Langkah 2: PostgreSQL di Neon (branch `dev`), migrasi `products` (golang-migrate), config dari env, pool pgx, `GET /api/v1/health/db`
+- [x] Langkah 3 (sebagian): `POST /api/v1/products` end-to-end (model, repository, service, handler); tes validasi (unit) dan tes integrasi ke DB (branch Neon `test`) lulus pada 2026-10-19
 
 ## Perintah yang berjalan
 Done:
@@ -22,12 +23,11 @@ Done:
 - Jalur 503 di `/health/db` belum teruji (celah tes)
 - Neon Free suspend setelah 5 menit idle; ukur cold start dan putuskan pooler vs direct saat deploy
 - Belum ada branch Neon untuk demo publik (baru `dev`)
+Done:
+- Branch Neon hanya menyalin skema saat dibuat: jalankan `migrate up` ke DB tes secara eksplisit setiap ada migrasi baru
+- Setelah memakai `$env:DATABASE_URL` untuk migrate, hapus (`Remove-Item Env:DATABASE_URL`), karena godotenv tidak menimpa env var yang sudah ada
+- Celah tes: lapisan HTTP (handler) belum punya tes otomatis; kasus curl dicek manual
 
 ## Tugas berikutnya
 - Langkah 2: PostgreSQL lokal + koneksi pgx + migrasi tabel `products`
-
-## Selesai
-- Membuat Config, Database dan Handler, Diuji dari go run ./cmd/api 
-
-## Tugas berikutnya
--
+- Langkah 3: vertical slice products (model, repository, service, handler, test)
