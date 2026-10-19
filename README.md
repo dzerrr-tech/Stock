@@ -153,6 +153,7 @@ Document the actual endpoints and authorization rules. Planned examples:
 | `POST` | `/api/v1/stock-movements` | Record stock-in/out |
 | `GET` | `/api/v1/stock-movements` | List movement history |
 | `GET` | `/api/v1/dashboard` | Dashboard summaries |
+| `GET` | `/api/v1/products`  | Implement with parameter search, page, page_size|
 
 Example request (adapt to the actual API contract):
 
@@ -212,6 +213,7 @@ List exact commands and observed results.
 - Concurrent stock-out test.
 - Authentication and role authorization tests.
 - Frontend build and important user-flow checks.
+- Tes otomatis mencakup validasi service dan integrasi service-database; lapisan HTTP belum diuji otomatis
 
 **Latest verified result:** [TODO: date, command, pass/fail summary]
 
@@ -235,6 +237,7 @@ Compared with full commercial inventory/warehouse management systems, this proje
 - [TODO: actual limitation]
 - [TODO: deliberate MVP trade-off]
 - [TODO: known bug or unsupported workflow]
+- [trade-off OFFSET dan ILIKE]
 
 Explain why each important trade-off was made and what would be needed to address it.
 

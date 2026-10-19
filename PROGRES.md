@@ -3,7 +3,7 @@
 ## Selesai
 - [x] Langkah 1: kerangka backend Go + Gin, `GET /api/v1/health` (diuji manual dengan curl, 200 OK)
 - [x] Langkah 2: PostgreSQL di Neon (branch `dev`), migrasi `products` (golang-migrate), config dari env, pool pgx, `GET /api/v1/health/db`
-- [x] Langkah 3 (sebagian): `POST /api/v1/products` end-to-end (model, repository, service, handler); tes validasi (unit) dan tes integrasi ke DB (branch Neon `test`) lulus pada 2026-10-19
+- [x] Langkah 3 (sebagian): `POST /api/v1/products` end-to-end (model, repository, service, handler); tes validasi (unit) dan tes integrasi ke DB (branch Neon `test`) lulus pada 2026-10-19, GET /api/v1/products (search, pagination), tes integrasi lulus <tanggal>.
 
 ## Perintah yang berjalan
 Done:
@@ -27,6 +27,10 @@ Done:
 - Branch Neon hanya menyalin skema saat dibuat: jalankan `migrate up` ke DB tes secara eksplisit setiap ada migrasi baru
 - Setelah memakai `$env:DATABASE_URL` untuk migrate, hapus (`Remove-Item Env:DATABASE_URL`), karena godotenv tidak menimpa env var yang sudah ada
 - Celah tes: lapisan HTTP (handler) belum punya tes otomatis; kasus curl dicek manual
+Done:
+- Pagination OFFSET dan ILIKE '%x%' dipilih untuk MVP; alternatif keyset/pg_trgm bila data besar.
+- Route tidak terdaftar di main.go tidak terdeteksi tes mana pun; butuh tes HTTP (httptest).
+- Lapisan HTTP (router + handler) tidak punya tes otomatis; diverifikasi manual lewat curl dan daftar route di log startup
 
 ## Tugas berikutnya
 - Langkah 2: PostgreSQL lokal + koneksi pgx + migrasi tabel `products`

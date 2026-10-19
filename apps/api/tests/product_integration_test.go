@@ -100,3 +100,66 @@ func TestProducts_DatabaseRejectsNegativeStock(t *testing.T) {
 		t.Fatalf("want products_stock_non_negative violation, got %v", err)
 	}
 }
+
+func TestListProducts_PaginationAndOrder(t *testing.T) {
+	s, pool := newTestDeps(t)
+	ctx := context.Background()
+
+	prefix := uniqueSKU("LST")
+	for _, suffix := range []string{"A", "B", "C"} {
+		sku := prefix + "-" + suffix
+		cleanupSKU(t, pool, sku)
+		if _, err := s.Create(ctx, service.CreateProductInput{SKU: sku, Name: "Barang " + suffix}); err != nil {
+			t.Fatalf("seed %s: %v", sku, err)
+		}
+	}
+
+	search := strings.ToLower(prefix) // huruf kecil: pencarian harus tidak peka kapital
+
+	page1, err := s.List(ctx, service.ListProductsInput{Search: search, Page: 1, PageSize: 2})
+	if err != nil {
+		t.Fatalf("list page 1: %v", err)
+	}
+	if page1.Total != 3 {
+		t.Errorf("total = %d, want 3", page1.Total)
+	}
+	if len(page1.Products) != 2 {
+		t.Fatalf("page 1 has %d items, want 2", len(page1.Products))
+	}
+	if page1.Products[0].SKU != prefix+"-C" {
+		t.Errorf("first = %s, want newest %s", page1.Products[0].SKU, prefix+"-C")
+	}
+
+	page2, err := s.List(ctx, service.ListProductsInput{Search: search, Page: 2, PageSize: 2})
+	if err != nil {
+		t.Fatalf("list page 2: %v", err)
+	}
+	if len(page2.Products) != 1 || page2.Products[0].SKU != prefix+"-A" {
+		t.Errorf("page 2 = %+v, want only %s", page2.Products, prefix+"-A")
+	}
+}
+
+func TestListProducts_SearchTreatsWildcardsAsLiterals(t *testing.T) {
+	s, pool := newTestDeps(t)
+	ctx := context.Background()
+
+	prefix := uniqueSKU("ESC")
+	seed := map[string]string{
+		prefix + "-1": prefix + " diskon 50% off",
+		prefix + "-2": prefix + " diskon 500 off",
+	}
+	for sku, name := range seed {
+		cleanupSKU(t, pool, sku)
+		if _, err := s.Create(ctx, service.CreateProductInput{SKU: sku, Name: name}); err != nil {
+			t.Fatalf("seed %s: %v", sku, err)
+		}
+	}
+
+	res, err := s.List(ctx, service.ListProductsInput{Search: prefix + " diskon 50%"})
+	if err != nil {
+		t.Fatalf("list: %v", err)
+	}
+	if res.Total != 1 {
+		t.Errorf("total = %d, want 1 (the %% must not act as a wildcard)", res.Total)
+	}
+}

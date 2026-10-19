@@ -17,3 +17,6 @@
 - Table-driven test + `t.Run`; `t.Fatalf` (stop) vs `t.Errorf` (lanjut).
 - Tes integrasi: `t.Skip` bila env kosong, `t.Cleanup` (LIFO) untuk membersihkan data.
 - Mutation check: ubah kode sebentar untuk memastikan tes benar-benar bisa gagal.
+
+# slice kosong vs nil di JSON
+LIMIT/OFFSET wajib diurutkan, dan escape karakter LIKE.
